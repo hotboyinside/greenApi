@@ -1,0 +1,113 @@
+.page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+}
+
+.brand {
+  color: var(--color-text-brand);
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+}
+
+.card h1 {
+  font-size: 26px;
+  line-height: 1.2;
+  margin: 16px 0 12px;
+}
+
+.description {
+  color: var(--color-text-secondary);
+  margin: 0 0 24px;
+}
+
+.fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.fields label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fields input {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-control);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  color: inherit;
+  background: var(--color-surface);
+}
+
+.fields input:focus-visible,
+.primaryButton:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
+}
+
+.fields input[aria-invalid='true'] {
+  border-color: var(--color-border-error);
+}
+
+.primaryButton {
+  min-height: 46px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  background: var(--color-action-primary);
+  color: var(--color-text-on-accent);
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--color-action-primary-hover);
+}
+
+.primaryButton:disabled {
+  opacity: 0.55;
+}
+
+.note {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  margin: 16px 0 0;
+}
+
+.error {
+  color: var(--color-text-error);
+  font-size: 14px;
+  margin: 4px 0 12px;
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 16px;
+  }
+  .card {
+    padding: 24px;
+  }
+}

@@ -1,0 +1,21 @@
+@import './primitives.css';
+
+:root {
+  --color-background: var(--palette-slate-50);
+  --color-surface: var(--palette-white);
+
+  --color-text-primary: var(--palette-slate-900);
+  --color-text-secondary: var(--palette-slate-600);
+  --color-text-on-accent: var(--palette-white);
+  --color-text-brand: var(--palette-green-700);
+  --color-text-success: var(--palette-green-700);
+  --color-text-error: var(--palette-red-700);
+
+  --color-border: var(--palette-slate-100);
+  --color-border-control: var(--palette-slate-300);
+  --color-border-error: var(--palette-red-700);
+  --color-focus-ring: var(--palette-green-300);
+
+  --color-action-primary: var(--palette-green-700);
+  --color-action-primary-hover: var(--palette-green-800);
+}

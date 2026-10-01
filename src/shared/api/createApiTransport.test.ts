@@ -29,6 +29,24 @@ const request = {
 afterEach(() => vi.useRealTimers())
 
 describe('createApiClient', () => {
+  test('rejects a late response even if the fetcher ignores cancellation', async () => {
+    let resolveResponse: ((response: Response) => void) | undefined
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveResponse = resolve
+        }),
+    )
+    const controller = new AbortController()
+    const transport = createApiClient({ ...options, fetcher })
+    const assertion = expect(
+      transport.request({ ...request, signal: controller.signal }),
+    ).rejects.toMatchObject({ code: 'aborted' })
+    controller.abort()
+    resolveResponse?.(Response.json({ idMessage: '789' }))
+    await assertion
+  })
+
   test('builds the URL, serializes the body and parses the response', async () => {
     const fetcher = vi
       .fn<typeof fetch>()

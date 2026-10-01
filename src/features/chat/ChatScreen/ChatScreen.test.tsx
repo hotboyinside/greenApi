@@ -15,6 +15,23 @@ import { ChatScreen } from '.'
 
 afterEach(cleanup)
 
+vi.mock('../hooks', () => ({ useNotifications: () => null }))
+
+test('безопасно открывает чат с идентификатором, совпадающим с ключом прототипа', async () => {
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValue(
+      Response.json({ exist: true, chatId: '__proto__', fromCache: true }),
+    )
+  const { user } = setup(fetcher)
+  await user.type(screen.getByLabelText('Номер получателя'), '79991234567')
+  await user.click(screen.getByRole('button', { name: 'Создать чат' }))
+  expect(
+    await screen.findByRole('heading', { name: '79991234567' }),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('log')).toHaveTextContent('Пока нет сообщений.')
+})
+
 test('результат отправки остаётся в исходном чате после переключения', async () => {
   let resolveMessage: ((response: Response) => void) | undefined
   const fetcher = vi

@@ -4,6 +4,8 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { createApiClient } from '../../../shared/api'
+import { useState } from 'react'
+import type { ChatMessage } from '../types'
 import { Conversation } from '.'
 import { messageSchema } from './messageSchema'
 
@@ -16,12 +18,20 @@ function setup(fetcher = vi.fn<typeof fetch>()) {
     apiTokenInstance: 'test-token',
     fetcher,
   })
-  const view = render(
-    <Conversation
-      client={client}
-      chat={{ chatId: 'canonical-id', phoneNumber: '79991234567' }}
-    />,
-  )
+  function TestConversation() {
+    const [messages, setMessages] = useState<ChatMessage[]>([])
+    return (
+      <Conversation
+        client={client}
+        chat={{ chatId: 'canonical-id', phoneNumber: '79991234567' }}
+        messages={messages}
+        onMessageSent={(message) =>
+          setMessages((current) => [...current, message])
+        }
+      />
+    )
+  }
+  const view = render(<TestConversation />)
   return { ...view, user: userEvent.setup(), fetcher }
 }
 

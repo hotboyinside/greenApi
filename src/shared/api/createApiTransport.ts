@@ -9,6 +9,7 @@ export interface ApiClientOptions {
 }
 
 export interface ApiRequest<T> {
+  allowEmptyResponse?: boolean
   method: 'GET' | 'POST' | 'DELETE'
   endpoint: string
   parse: (data: unknown) => T
@@ -109,6 +110,7 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
           ? {}
           : { body, headers: { 'Content-Type': 'application/json' } }),
       })
+      controller.signal.throwIfAborted()
       if (!response.ok) {
         throw new ApiError(
           'http',
@@ -118,13 +120,19 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
       }
       let data: unknown
       try {
-        data = await response.json()
+        if (input.allowEmptyResponse) {
+          const text = await response.text()
+          data = text.trim() ? JSON.parse(text) : null
+        } else {
+          data = await response.json()
+        }
       } catch {
         throw new ApiError(
           'invalid-response',
           'Ответ API не содержит корректный JSON',
         )
       }
+      controller.signal.throwIfAborted()
       if (isApiFailure(data)) {
         throw new ApiError('api', 'GREEN-API не смог выполнить операцию')
       }

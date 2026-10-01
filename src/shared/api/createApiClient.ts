@@ -6,6 +6,8 @@ import { parseCheckAccount } from './checkAccount'
 import type { CheckAccountResponse } from './checkAccount'
 import { parseSendMessage } from './sendMessage'
 import type { SendMessageInput, SendMessageResponse } from './sendMessage'
+import { parseNotification, parseDeleteNotification } from './notifications'
+import type { Notification } from './notifications'
 
 export type { ApiClientOptions } from './createApiTransport'
 
@@ -14,6 +16,13 @@ export interface ApiCallOptions {
 }
 
 export interface ApiClient {
+  receiveNotification: (
+    options?: ApiCallOptions,
+  ) => Promise<Notification | null>
+  deleteNotification: (
+    receiptId: number,
+    options?: ApiCallOptions,
+  ) => Promise<{ result: boolean }>
   sendMessage: (
     input: SendMessageInput,
     options?: ApiCallOptions,
@@ -30,6 +39,23 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   const transport = createApiTransport(options)
 
   return {
+    receiveNotification: (callOptions = {}) =>
+      transport.request({
+        method: 'GET',
+        endpoint: 'receiveNotification',
+        query: { receiveTimeout: 20 },
+        timeoutMs: 30_000,
+        allowEmptyResponse: true,
+        parse: parseNotification,
+        signal: callOptions.signal,
+      }),
+    deleteNotification: (receiptId, callOptions = {}) =>
+      transport.request({
+        method: 'DELETE',
+        endpoint: `deleteNotification/${receiptId}`,
+        parse: parseDeleteNotification,
+        signal: callOptions.signal,
+      }),
     sendMessage: (input, callOptions = {}) =>
       transport.request({
         method: 'POST',

@@ -56,6 +56,10 @@
   white-space: pre-wrap;
 }
 
+.incoming {
+  align-self: flex-start;
+}
+
 .messageForm {
   display: grid;
   gap: 12px;

@@ -6,6 +6,8 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import App from './App'
 
+vi.mock('./features/chat/hooks', () => ({ useNotifications: () => null }))
+
 beforeEach(() => {
   vi.stubEnv('VITE_GREEN_API_URL', 'https://example.test')
 })

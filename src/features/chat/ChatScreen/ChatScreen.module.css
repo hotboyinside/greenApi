@@ -46,6 +46,11 @@
   overflow-wrap: anywhere;
 }
 
+.error {
+  color: var(--color-text-error);
+  font-size: 13px;
+}
+
 .sidebar h1 {
   font-size: 22px;
   margin-top: 32px;

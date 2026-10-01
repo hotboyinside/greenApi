@@ -1,29 +1,27 @@
-import { useEffect, useRef, useState } from 'react'
-import type { SubmitEvent } from 'react'
-import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { ApiError } from '../../../shared/api'
+import type { SubmitEvent } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
 import type { ApiClient } from '../../../shared/api'
-import { messageSchema } from './messageSchema'
-import type { MessageValues } from './messageSchema'
-import type { Chat } from '../types'
+import { ApiError } from '../../../shared/api'
+import type { Chat, ChatMessage } from '../types'
 import styles from './Conversation.module.css'
-
-interface OutgoingMessage {
-  idMessage: string
-  text: string
-}
+import type { MessageValues } from './messageSchema'
+import { messageSchema } from './messageSchema'
 
 export function Conversation({
   client,
   chat,
   isActive = true,
+  messages,
+  onMessageSent,
 }: {
   client: ApiClient
   chat: Chat
   isActive?: boolean
+  messages: ChatMessage[]
+  onMessageSent: (message: ChatMessage) => void
 }) {
-  const [messages, setMessages] = useState<OutgoingMessage[]>([])
   const [error, setError] = useState<string | null>(null)
   const requestRef = useRef<AbortController | null>(null)
   const endRef = useRef<HTMLDivElement | null>(null)
@@ -61,14 +59,17 @@ export function Conversation({
         { signal: controller.signal },
       )
       if (controller.signal.aborted) return
-      setMessages((current) => [
-        ...current,
-        { idMessage: result.idMessage, text: message },
-      ])
+
+      onMessageSent({
+        idMessage: result.idMessage,
+        text: message,
+        direction: 'outgoing',
+      })
       reset()
       if (activeRef.current) setFocus('message')
     } catch (cause) {
       if (controller.signal.aborted) return
+
       setError(
         cause instanceof ApiError &&
           ['network', 'timeout', 'invalid-response'].includes(cause.code)
@@ -85,12 +86,13 @@ export function Conversation({
       event.preventDefault()
       return
     }
+
     void handleSubmit(submit)(event)
   }
 
   return (
     <div className={styles.conversation}>
-      <h2>{chat.phoneNumber}</h2>
+      <h2>{chat.name ?? chat.phoneNumber}</h2>
       <div
         className={styles.messages}
         role="log"
@@ -99,11 +101,16 @@ export function Conversation({
         {messages.length === 0 && (
           <p className={styles.hint}>Пока нет сообщений.</p>
         )}
+
         {messages.map((message) => (
-          <div className={styles.message} key={message.idMessage}>
+          <div
+            className={`${styles.message} ${message.direction === 'incoming' ? styles.incoming : ''}`}
+            key={message.idMessage}
+          >
             <p>{message.text}</p>
           </div>
         ))}
+
         <div ref={endRef} />
       </div>
       <form
@@ -123,6 +130,7 @@ export function Conversation({
             errors.message ? `message-error-${chat.chatId}` : undefined
           }
         />
+
         {errors.message && (
           <p
             id={`message-error-${chat.chatId}`}
@@ -132,11 +140,13 @@ export function Conversation({
             {errors.message.message}
           </p>
         )}
+
         {error && (
           <p className={styles.error} role="alert">
             {error}
           </p>
         )}
+
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Отправляем…' : 'Отправить'}
         </button>

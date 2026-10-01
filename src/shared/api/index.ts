@@ -9,3 +9,4 @@ export type {
 export type { StateInstance, StateInstanceResponse } from './stateInstance'
 export type { CheckAccountResponse } from './checkAccount'
 export type { SendMessageInput, SendMessageResponse } from './sendMessage'
+export type { Notification, IncomingTextMessage } from './notifications'

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { ApiClient, IncomingTextMessage } from '../../../shared/api'
+import type { ApiClient, IncomingTextMessage } from '../../../api'
 import { pollNotifications } from './pollNotifications'
 
 export function useNotifications(

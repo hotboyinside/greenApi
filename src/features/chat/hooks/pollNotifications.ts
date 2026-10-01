@@ -1,5 +1,5 @@
-import type { ApiClient, IncomingTextMessage } from '../../../shared/api'
-import { ApiError } from '../../../shared/api'
+import type { ApiClient, IncomingTextMessage } from '../../../api'
+import { ApiError } from '../../../api'
 
 function pause(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
@@ -28,15 +28,20 @@ export async function pollNotifications(
     try {
       const notification = await client.receiveNotification({ signal })
       if (signal.aborted) return
+
       if (notification) {
         if (notification.message) onMessage(notification.message)
+
         if (signal.aborted) return
+
         await client.deleteNotification(notification.receiptId, { signal })
         // result:false также означает, что уведомление уже удалено другим потребителем.
       }
       if (signal.aborted) return
+
       failures = 0
       onError(null)
+
       await pause(1000, signal)
     } catch (cause) {
       if (
@@ -54,11 +59,13 @@ export async function pollNotifications(
         onError(
           'Получение сообщений остановлено. Проверьте настройки инстанса и подключитесь заново.',
         )
+
         return
       }
 
       onError('Не удалось получить сообщения. Повторяем подключение…')
       failures++
+
       await pause(Math.min(1000 * 2 ** Math.min(failures, 5), 30_000), signal)
     }
   }

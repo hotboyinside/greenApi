@@ -2,8 +2,8 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import type { SubmitEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import type { ApiClient } from '../../../shared/api'
-import { ApiError } from '../../../shared/api'
+import type { ApiClient } from '../../../api'
+import { ApiError } from '../../../api'
 import styles from './NewChatForm.module.css'
 import type { NewChatValues } from './newChatSchema'
 import { newChatSchema } from './newChatSchema'
@@ -11,11 +11,13 @@ import type { Chat } from '../types'
 
 interface NewChatFormProps {
   client: ApiClient
+  chats: Chat[]
   onOpenChat: (chat: Chat) => void
 }
 
-export function NewChatForm({ client, onOpenChat }: NewChatFormProps) {
+export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
   const requestRef = useRef<AbortController | null>(null)
+  const openChatRef = useRef(onOpenChat)
   const [error, setError] = useState<string | null>(null)
   const {
     register,
@@ -27,6 +29,10 @@ export function NewChatForm({ client, onOpenChat }: NewChatFormProps) {
     defaultValues: { phoneNumber: '' },
   })
 
+  useEffect(() => {
+    openChatRef.current = onOpenChat
+  }, [onOpenChat])
+
   useEffect(
     () => () => {
       requestRef.current?.abort()
@@ -37,6 +43,13 @@ export function NewChatForm({ client, onOpenChat }: NewChatFormProps) {
 
   async function submit({ phoneNumber }: NewChatValues) {
     if (requestRef.current) return
+    setError(null)
+    const existingChat = chats.find((chat) => chat.phoneNumber === phoneNumber)
+    if (existingChat) {
+      openChatRef.current(existingChat)
+      reset()
+      return
+    }
 
     const controller = new AbortController()
     requestRef.current = controller
@@ -52,7 +65,7 @@ export function NewChatForm({ client, onOpenChat }: NewChatFormProps) {
         return
       }
 
-      onOpenChat({ chatId: result.chatId, phoneNumber })
+      openChatRef.current({ chatId: result.chatId, phoneNumber })
       reset()
     } catch (cause) {
       if (controller.signal.aborted) return

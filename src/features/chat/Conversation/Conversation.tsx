@@ -2,8 +2,8 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import type { SubmitEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import type { ApiClient } from '../../../shared/api'
-import { ApiError } from '../../../shared/api'
+import type { ApiClient } from '../../../api'
+import { ApiError } from '../../../api'
 import type { Chat, ChatMessage } from '../types'
 import styles from './Conversation.module.css'
 import type { MessageValues } from './messageSchema'
@@ -50,9 +50,11 @@ export function Conversation({
 
   async function submit({ message }: MessageValues) {
     if (requestRef.current) return
+
     const controller = new AbortController()
     requestRef.current = controller
     setError(null)
+
     try {
       const result = await client.sendMessage(
         { chatId: chat.chatId, message },

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ApiClient, StateInstance } from '../../../shared/api'
-import { ApiError, createApiClient } from '../../../shared/api'
+import type { ApiClient, StateInstance } from '../../../api'
+import { ApiError, createApiClient } from '../../../api'
 
 export interface Session {
   idInstance: string

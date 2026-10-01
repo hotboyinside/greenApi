@@ -1,7 +1,15 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
+import type { ReactNode } from 'react'
+import { ToastProvider } from './components/Toast'
 import { StrictMode } from 'react'
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render as renderReact,
+  screen,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import App from './App'
@@ -232,3 +240,7 @@ describe('Подключение', () => {
     ).not.toBeInTheDocument()
   })
 })
+
+function render(ui: ReactNode) {
+  return renderReact(ui, { wrapper: ToastProvider })
+}

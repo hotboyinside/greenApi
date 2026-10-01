@@ -1,16 +1,18 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
+import type { ReactNode } from 'react'
+import { ToastProvider } from '../../../components/Toast'
 import {
   act,
   cleanup,
   fireEvent,
-  render,
+  render as renderReact,
   screen,
   within,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
-import { createApiClient } from '../../../shared/api'
+import { createApiClient } from '../../../api'
 import { ChatScreen } from '.'
 
 afterEach(cleanup)
@@ -126,6 +128,12 @@ test('открывает чат по идентификатору API и не с
     expect(screen.getByLabelText('Номер получателя')).toHaveValue('')
   }
   expect(screen.getAllByRole('button', { name: '79991234567' })).toHaveLength(1)
+  expect(fetcher).toHaveBeenCalledTimes(1)
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'Чат с этим получателем уже существует',
+  )
+  await user.click(screen.getByRole('button', { name: 'Закрыть уведомление' }))
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(fetcher.mock.calls[0]?.[1]?.body).toBe(
     JSON.stringify({ phoneNumber: 79991234567 }),
   )
@@ -184,3 +192,7 @@ test('блокирует повторный запрос и отменяет п�
     await Promise.resolve()
   })
 })
+
+function render(ui: ReactNode) {
+  return renderReact(ui, { wrapper: ToastProvider })
+}

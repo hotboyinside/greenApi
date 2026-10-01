@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react'
-import type { ApiClient, IncomingTextMessage } from '../../../shared/api'
+import type { ApiClient, IncomingTextMessage } from '../../../api'
 import { Conversation } from '../Conversation'
 import { useNotifications } from '../hooks'
 import { NewChatForm } from '../NewChatForm'
 import type { Chat, ChatMessage } from '../types'
 import styles from './ChatScreen.module.css'
+import { useToast } from '../../../components/Toast'
 
 const EMPTY_MESSAGES: ChatMessage[] = []
 
@@ -22,6 +23,7 @@ export function ChatScreen({
   const [chats, setChats] = useState<Chat[]>([])
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Record<string, ChatMessage[]>>({})
+  const { showError } = useToast()
 
   const addMessage = useCallback((chatId: string, message: ChatMessage) => {
     setMessages((current) => {
@@ -59,6 +61,9 @@ export function ChatScreen({
   const activeChat = chats.find((chat) => chat.chatId === activeChatId)
 
   function openChat(chat: Chat) {
+    if (chats.some((item) => item.chatId === chat.chatId)) {
+      showError('Чат с этим получателем уже существует')
+    }
     setChats((current) =>
       current.some((item) => item.chatId === chat.chatId)
         ? current
@@ -85,7 +90,7 @@ export function ChatScreen({
         )}
 
         <h1>Чаты</h1>
-        <NewChatForm client={client} onOpenChat={openChat} />
+        <NewChatForm client={client} chats={chats} onOpenChat={openChat} />
 
         {chats.length === 0 && (
           <p className={styles.hint}>Здесь появятся ваши переписки.</p>

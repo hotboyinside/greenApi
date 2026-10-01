@@ -1,18 +1,20 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
+import type { ReactNode } from 'react'
+import { ToastProvider } from '../../../components/Toast'
 import { StrictMode } from 'react'
 import {
   act,
   cleanup,
-  render,
+  render as renderReact,
   screen,
   within,
   waitFor,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
-import { createApiClient } from '../../../shared/api'
-import type { Notification } from '../../../shared/api'
+import { createApiClient } from '../../../api'
+import type { Notification } from '../../../api'
 import { ChatScreen } from '.'
 
 afterEach(() => {
@@ -138,3 +140,7 @@ test('добавляет ответ в созданный по номеру ча
   expect(screen.getAllByRole('button', { name: '79991234567' })).toHaveLength(1)
   expect(s.receive).toHaveBeenCalledTimes(1)
 })
+
+function render(ui: ReactNode) {
+  return renderReact(ui, { wrapper: ToastProvider })
+}

@@ -22,6 +22,7 @@ function nonempty(value: unknown): value is string {
 
 export function parseNotification(data: unknown): Notification | null {
   if (data === null) return null
+
   if (
     !record(data) ||
     typeof data.receiptId !== 'number' ||
@@ -31,17 +32,21 @@ export function parseNotification(data: unknown): Notification | null {
     !nonempty(data.body.typeWebhook)
   )
     throw new Error('Некорректное уведомление')
+
   const { receiptId, body } = data
   if (body.typeWebhook !== 'incomingMessageReceived')
     return { receiptId, message: null }
+
   if (!record(body.messageData) || !nonempty(body.messageData.typeMessage))
     throw new Error('Некорректные данные сообщения')
+
   const messageData = body.messageData
   if (
     messageData.typeMessage !== 'textMessage' &&
     messageData.typeMessage !== 'extendedTextMessage'
   )
     return { receiptId, message: null }
+
   const textData =
     messageData.typeMessage === 'textMessage'
       ? messageData.textMessageData
@@ -51,6 +56,7 @@ export function parseNotification(data: unknown): Notification | null {
         messageData.typeMessage === 'textMessage' ? 'textMessage' : 'text'
       ]
     : undefined
+
   if (
     !record(body.senderData) ||
     !nonempty(body.senderData.chatId) ||
@@ -61,8 +67,10 @@ export function parseNotification(data: unknown): Notification | null {
     typeof text !== 'string'
   )
     throw new Error('Некорректный текст сообщения')
+
   const chatId = body.senderData.chatId
   const sender = body.senderData
+
   return {
     receiptId,
     message: {

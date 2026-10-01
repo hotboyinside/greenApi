@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from 'vitest'
-import { ApiError, createApiClient } from '../../../shared/api'
+import { ApiError, createApiClient } from '../../../api'
 import { pollNotifications } from './pollNotifications'
 
 afterEach(() => {

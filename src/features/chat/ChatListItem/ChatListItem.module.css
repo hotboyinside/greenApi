@@ -1,0 +1,50 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  text-align: left;
+  transition: background-color 150ms ease;
+}
+
+.row:hover {
+  background: var(--color-chat-hover);
+}
+
+.row[aria-pressed='true'] {
+  background: var(--color-chat-selected);
+}
+
+.row:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: -3px;
+}
+
+.content {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.title,
+.preview {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.preview {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}

@@ -1,6 +1,8 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { Plus, X, LogOut, MessageCircle } from 'lucide-react'
 import type { ApiClient, IncomingTextMessage } from '../../../api'
 import { Conversation } from '../Conversation'
+import { ChatListItem } from '../ChatListItem'
 import { useNotifications } from '../hooks'
 import { NewChatForm } from '../NewChatForm'
 import type { Chat, ChatMessage } from '../types'
@@ -24,6 +26,13 @@ export function ChatScreen({
   const [activeChatId, setActiveChatId] = useState<string | null>(null)
   const [messages, setMessages] = useState<Record<string, ChatMessage[]>>({})
   const { showError } = useToast()
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false)
+  const newChatButtonRef = useRef<HTMLButtonElement>(null)
+
+  function closeNewChat() {
+    setIsNewChatOpen(false)
+    newChatButtonRef.current?.focus()
+  }
 
   const addMessage = useCallback((chatId: string, message: ChatMessage) => {
     setMessages((current) => {
@@ -70,45 +79,81 @@ export function ChatScreen({
         : [...current, chat],
     )
     setActiveChatId(chat.chatId)
+    closeNewChat()
   }
 
   return (
     <main className={styles.page}>
       <aside className={styles.sidebar} aria-label="Чаты">
-        <header className={styles.header}>
-          <strong>GREEN API</strong>
-          <button type="button" onClick={onDisconnect}>
-            Выйти
-          </button>
-        </header>
-        <p className={styles.connection}>Подключено · инстанс {idInstance}</p>
+        <div className={styles.sidebarTop}>
+          <header className={styles.header}>
+            <strong>GREEN API</strong>
+            <button type="button" onClick={onDisconnect}>
+              <LogOut size={18} aria-hidden="true" />
+              Выйти
+            </button>
+          </header>
+          <p className={styles.connection}>Подключено · инстанс {idInstance}</p>
 
-        {pollingError && (
-          <p className={styles.error} role="alert">
-            {pollingError}
-          </p>
-        )}
+          {pollingError && (
+            <p className={styles.error} role="alert">
+              {pollingError}
+            </p>
+          )}
 
-        <h1>Чаты</h1>
-        <NewChatForm client={client} chats={chats} onOpenChat={openChat} />
+          <div className={styles.chatHeading}>
+            <h1>Чаты</h1>
+            <button
+              ref={newChatButtonRef}
+              className={styles.newChatButton}
+              type="button"
+              aria-label={isNewChatOpen ? 'Закрыть создание чата' : 'Новый чат'}
+              aria-expanded={isNewChatOpen}
+              aria-controls="new-chat-panel"
+              onClick={() => {
+                if (isNewChatOpen) closeNewChat()
+                else setIsNewChatOpen(true)
+              }}
+            >
+              {isNewChatOpen ? (
+                <X size={20} aria-hidden="true" />
+              ) : (
+                <Plus size={20} aria-hidden="true" />
+              )}
+            </button>
+          </div>
+          <div id="new-chat-panel" hidden={!isNewChatOpen}>
+            {isNewChatOpen && (
+              <NewChatForm
+                client={client}
+                chats={chats}
+                onOpenChat={openChat}
+              />
+            )}
+          </div>
+        </div>
 
-        {chats.length === 0 && (
-          <p className={styles.hint}>Здесь появятся ваши переписки.</p>
-        )}
+        <div className={styles.chatListArea}>
+          {chats.length === 0 && (
+            <p className={styles.hint}>Здесь появятся ваши переписки.</p>
+          )}
 
-        <ul className={styles.chatList}>
-          {chats.map((chat) => (
-            <li key={chat.chatId}>
-              <button
-                type="button"
-                aria-pressed={chat.chatId === activeChatId}
-                onClick={() => setActiveChatId(chat.chatId)}
-              >
-                {chat.name ?? chat.phoneNumber}
-              </button>
-            </li>
-          ))}
-        </ul>
+          <ul className={styles.chatList}>
+            {chats.map((chat) => (
+              <ChatListItem
+                key={chat.chatId}
+                chat={chat}
+                lastMessage={
+                  Object.hasOwn(messages, chat.chatId)
+                    ? messages[chat.chatId].at(-1)
+                    : undefined
+                }
+                isActive={chat.chatId === activeChatId}
+                onSelect={() => setActiveChatId(chat.chatId)}
+              />
+            ))}
+          </ul>
+        </div>
       </aside>
       <section
         className={activeChat ? styles.chatPane : styles.empty}
@@ -116,8 +161,11 @@ export function ChatScreen({
       >
         {!activeChat && (
           <div>
+            <div className={styles.emptyIcon} aria-hidden="true">
+              <MessageCircle size={36} />
+            </div>
             <h2>Вы подключены к MAX</h2>
-            <p>Пока нет открытых чатов.</p>
+            <p>Выберите чат слева или создайте новый через +</p>
           </div>
         )}
 

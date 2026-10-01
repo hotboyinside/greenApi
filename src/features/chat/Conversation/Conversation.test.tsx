@@ -86,6 +86,43 @@ test('при потере ответа сохраняет текст и пред
   expect(fetcher).toHaveBeenCalledTimes(1)
 })
 
+test('Shift+Enter добавляет перенос, Enter отправляет текст и очищает поле', async () => {
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValue(Response.json({ idMessage: 'keyboard-1' }))
+  const { user } = setup(fetcher)
+  const input = screen.getByRole('textbox', { name: 'Сообщение' })
+  await user.type(input, 'Первая строка')
+  await user.keyboard('{Shift>}{Enter}{/Shift}Вторая строка')
+  expect(input).toHaveValue('Первая строка\nВторая строка')
+  expect(fetcher).not.toHaveBeenCalled()
+  await user.keyboard('{Enter}')
+  expect(fetcher.mock.calls[0]?.[1]?.body).toBe(
+    JSON.stringify({
+      chatId: 'canonical-id',
+      message: 'Первая строка\nВторая строка',
+    }),
+  )
+  expect(input).toHaveValue('')
+  expect(input).toHaveFocus()
+})
+
+test('не отправляет сообщение при Enter во время композиции IME', async () => {
+  const { user, fetcher } = setup()
+  const input = screen.getByRole('textbox', { name: 'Сообщение' })
+  await user.type(input, 'Текст')
+  fireEvent.compositionStart(input)
+  fireEvent.keyDown(input, { key: 'Enter' })
+  fireEvent.compositionEnd(input)
+  fireEvent.keyDown(input, { key: 'Enter', isComposing: true })
+  fireEvent.keyDown(input, { key: 'Enter', keyCode: 229 })
+  await act(async () => {
+    await Promise.resolve()
+  })
+  expect(fetcher).not.toHaveBeenCalled()
+  expect(input).toHaveValue('Текст')
+})
+
 test('блокирует повторную отправку и отменяет запрос при выходе', async () => {
   let resolveResponse: ((response: Response) => void) | undefined
   const fetcher = vi.fn<typeof fetch>().mockImplementation(
@@ -101,6 +138,7 @@ test('блокирует повторную отправку и отменяет
   const form = screen.getByLabelText('Сообщение').closest('form')
   if (!form) throw new Error('Форма не найдена')
   fireEvent.submit(form)
+  fireEvent.keyDown(screen.getByLabelText('Сообщение'), { key: 'Enter' })
   expect(fetcher).toHaveBeenCalledTimes(1)
   unmount()
   expect(fetcher.mock.calls[0]?.[1]?.signal?.aborted).toBe(true)

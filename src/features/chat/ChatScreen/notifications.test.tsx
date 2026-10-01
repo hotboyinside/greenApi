@@ -67,6 +67,7 @@ test('начинает опрос без чатов в StrictMode, создаё�
   })
   expect(s.receive).toHaveBeenCalledTimes(1)
   const chatButton = screen.getByRole('button', { name: 'Павел' })
+  expect(chatButton).toHaveAccessibleDescription('Ответ MAX')
   await s.user.click(chatButton)
   expect(
     within(screen.getByRole('log')).getByText('Ответ MAX'),
@@ -116,6 +117,7 @@ test('добавляет ответ в созданный по номеру ча
   await act(async () => {
     await Promise.resolve()
   })
+  await s.user.click(screen.getByRole('button', { name: 'Новый чат' }))
   await s.user.type(screen.getByLabelText('Номер получателя'), '79991234567')
   await s.user.click(screen.getByRole('button', { name: 'Создать чат' }))
   await s.user.type(
@@ -123,6 +125,9 @@ test('добавляет ответ в созданный по номеру ча
     'Привет',
   )
   await s.user.click(screen.getByRole('button', { name: 'Отправить' }))
+  expect(
+    screen.getByRole('button', { name: '79991234567' }),
+  ).toHaveAccessibleDescription('Вы: Привет')
   await s.user.type(
     screen.getByRole('textbox', { name: 'Сообщение' }),
     'Черновик',
@@ -134,6 +139,9 @@ test('добавляет ответ в созданный по номеру ча
   const log = screen.getByRole('log')
   expect(within(log).getByText('Привет')).toBeInTheDocument()
   expect(within(log).getByText('Ответ MAX')).toBeInTheDocument()
+  expect(
+    screen.getByRole('button', { name: '79991234567' }),
+  ).toHaveAccessibleDescription('Ответ MAX')
   expect(screen.getByRole('textbox', { name: 'Сообщение' })).toHaveValue(
     'Черновик',
   )

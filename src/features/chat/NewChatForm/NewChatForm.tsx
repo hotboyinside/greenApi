@@ -23,11 +23,16 @@ export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
     register,
     handleSubmit,
     reset,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<NewChatValues>({
     resolver: yupResolver(newChatSchema),
     defaultValues: { phoneNumber: '' },
   })
+
+  useEffect(() => {
+    setFocus('phoneNumber')
+  }, [setFocus])
 
   useEffect(() => {
     openChatRef.current = onOpenChat
@@ -46,8 +51,8 @@ export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
     setError(null)
     const existingChat = chats.find((chat) => chat.phoneNumber === phoneNumber)
     if (existingChat) {
-      openChatRef.current(existingChat)
       reset()
+      openChatRef.current(existingChat)
       return
     }
 
@@ -65,8 +70,8 @@ export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
         return
       }
 
-      openChatRef.current({ chatId: result.chatId, phoneNumber })
       reset()
+      openChatRef.current({ chatId: result.chatId, phoneNumber })
     } catch (cause) {
       if (controller.signal.aborted) return
 

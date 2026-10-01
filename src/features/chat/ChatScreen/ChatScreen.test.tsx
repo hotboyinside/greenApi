@@ -19,6 +19,40 @@ afterEach(cleanup)
 
 vi.mock('../hooks', () => ({ useNotifications: () => null }))
 
+test('раскрывает форму с фокусом и отменяет проверку при закрытии без создания чата', async () => {
+  let resolveResponse: ((response: Response) => void) | undefined
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(
+    () =>
+      new Promise<Response>((resolve) => {
+        resolveResponse = resolve
+      }),
+  )
+  const { user } = setup(fetcher)
+  const toggle = screen.getByRole('button', { name: 'Новый чат' })
+  expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByLabelText('Номер получателя')).not.toBeInTheDocument()
+  await user.click(toggle)
+  expect(screen.getByLabelText('Номер получателя')).toHaveFocus()
+  await user.type(screen.getByLabelText('Номер получателя'), '79991234567')
+  await user.click(screen.getByRole('button', { name: 'Создать чат' }))
+  await user.click(
+    screen.getByRole('button', { name: 'Закрыть создание чата' }),
+  )
+  expect(fetcher.mock.calls[0]?.[1]?.signal?.aborted).toBe(true)
+  expect(toggle).toHaveFocus()
+  await act(async () => {
+    resolveResponse?.(
+      Response.json({ exist: true, chatId: 'late', fromCache: true }),
+    )
+    await Promise.resolve()
+  })
+  expect(
+    screen.queryByRole('button', { name: '79991234567' }),
+  ).not.toBeInTheDocument()
+  await user.click(toggle)
+  expect(screen.getByLabelText('Номер получателя')).toHaveValue('')
+})
+
 test('безопасно открывает чат с идентификатором, совпадающим с ключом прототипа', async () => {
   const fetcher = vi
     .fn<typeof fetch>()
@@ -26,12 +60,16 @@ test('безопасно открывает чат с идентификатор
       Response.json({ exist: true, chatId: '__proto__', fromCache: true }),
     )
   const { user } = setup(fetcher)
+  await user.click(screen.getByRole('button', { name: 'Новый чат' }))
   await user.type(screen.getByLabelText('Номер получателя'), '79991234567')
   await user.click(screen.getByRole('button', { name: 'Создать чат' }))
   expect(
     await screen.findByRole('heading', { name: '79991234567' }),
   ).toBeInTheDocument()
   expect(screen.getByRole('log')).toHaveTextContent('Пока нет сообщений.')
+  expect(
+    screen.getByRole('button', { name: '79991234567' }),
+  ).toHaveAccessibleDescription('Пока нет сообщений')
 })
 
 test('результат отправки остаётся в исходном чате после переключения', async () => {
@@ -51,11 +89,13 @@ test('результат отправки остаётся в исходном �
       Response.json({ exist: true, chatId: 'second', fromCache: true }),
     )
   const { user } = setup(fetcher)
+  await user.click(screen.getByRole('button', { name: 'Новый чат' }))
   await user.type(screen.getByLabelText('Номер получателя'), '79991234567')
   await user.click(screen.getByRole('button', { name: 'Создать чат' }))
   await screen.findByRole('heading', { name: '79991234567' })
   await user.type(screen.getByLabelText('Сообщение'), 'Первому получателю')
   await user.click(screen.getByRole('button', { name: 'Отправить' }))
+  await user.click(screen.getByRole('button', { name: 'Новый чат' }))
   await user.type(screen.getByLabelText('Номер получателя'), '79991234568')
   await user.click(screen.getByRole('button', { name: 'Создать чат' }))
   await screen.findByRole('heading', { name: '79991234568' })
@@ -67,6 +107,13 @@ test('результат отправки остаётся в исходном �
   })
   expect(secondInput).toHaveFocus()
   expect(secondInput).toHaveValue('Черновик второго чата')
+  expect(
+    screen.getByRole('button', { name: '79991234567' }),
+  ).toHaveAccessibleDescription('Вы: Первому получателю')
+  expect(screen.getByRole('button', { name: '79991234567' })).toHaveAttribute(
+    'aria-pressed',
+    'false',
+  )
   expect(
     within(screen.getByRole('log')).queryByText('Первому получателю'),
   ).not.toBeInTheDocument()
@@ -95,6 +142,7 @@ function setup(fetcher = vi.fn<typeof fetch>()) {
 
 test('проверяет номер до запроса и фокусирует поле', async () => {
   const { user, fetcher } = setup()
+  await user.click(screen.getByRole('button', { name: 'Новый чат' }))
   await user.click(screen.getByRole('button', { name: 'Создать чат' }))
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'Введите номер телефона',
@@ -119,13 +167,16 @@ test('открывает чат по идентификатору API и не с
     ),
   )
   const { user } = setup(fetcher)
+  await user.click(screen.getByRole('button', { name: 'Новый чат' }))
   for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0)
+      await user.click(screen.getByRole('button', { name: 'Новый чат' }))
     await user.type(screen.getByLabelText('Номер получателя'), ' 79991234567 ')
     await user.click(screen.getByRole('button', { name: 'Создать чат' }))
     expect(
       await screen.findByRole('heading', { name: '79991234567' }),
     ).toBeInTheDocument()
-    expect(screen.getByLabelText('Номер получателя')).toHaveValue('')
+    expect(screen.queryByLabelText('Номер получателя')).not.toBeInTheDocument()
   }
   expect(screen.getAllByRole('button', { name: '79991234567' })).toHaveLength(1)
   expect(fetcher).toHaveBeenCalledTimes(1)
@@ -150,6 +201,7 @@ test('объясняет отсутствие аккаунта и позволя
       Response.json({ exist: true, chatId: 'chat-id', fromCache: false }),
     )
   const { user } = setup(fetcher)
+  await user.click(screen.getByRole('button', { name: 'Новый чат' }))
   await user.type(screen.getByLabelText('Номер получателя'), '375291234567')
   await user.click(screen.getByRole('button', { name: 'Создать чат' }))
   expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -176,6 +228,7 @@ test('блокирует повторный запрос и отменяет п�
       }),
   )
   const { user, unmount } = setup(fetcher)
+  await user.click(screen.getByRole('button', { name: 'Новый чат' }))
   await user.type(screen.getByLabelText('Номер получателя'), '79991234567')
   await user.click(screen.getByRole('button', { name: 'Создать чат' }))
   expect(screen.getByRole('button', { name: 'Проверяем…' })).toBeDisabled()

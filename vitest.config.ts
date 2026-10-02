@@ -11,5 +11,6 @@ export default defineConfig({
     restoreMocks: true,
     unstubGlobals: true,
     unstubEnvs: true,
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
   },
 })

@@ -2,18 +2,32 @@
   height: 100dvh;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 340px minmax(0, 1fr);
   font-family: system-ui, sans-serif;
   color: var(--color-text-primary);
   line-height: 1.5;
 }
 
 .sidebar {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebarTop {
+  padding: 24px 24px 0;
+  max-height: 75dvh;
+  overflow-y: auto;
+}
+
+.chatListArea {
   min-height: 0;
   overflow-y: auto;
-  background: var(--color-surface);
-  padding: 24px;
-  border-right: 1px solid var(--color-border);
+  padding: 0 12px 24px;
 }
 
 .header {
@@ -28,6 +42,9 @@
 }
 
 .header button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: var(--color-surface);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-control);
@@ -51,9 +68,38 @@
   font-size: 13px;
 }
 
-.sidebar h1 {
+.chatHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 24px 0 16px;
+}
+
+.chatHeading h1 {
   font-size: 22px;
-  margin-top: 32px;
+  margin: 0;
+}
+
+.newChatButton {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-action-primary);
+  color: var(--color-text-on-accent);
+}
+
+.newChatButton:hover {
+  background: var(--color-action-primary-hover);
+}
+
+.newChatButton:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 3px;
 }
 
 .hint,
@@ -71,41 +117,33 @@
 
 .empty h2 {
   font-size: 24px;
+  margin: 20px 0 8px;
 }
 
-.chatList button {
-  min-width: 0;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border-control);
-  border-radius: 8px;
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+.empty p {
+  max-width: 360px;
+  margin: 0 auto;
 }
 
-.chatList button:focus-visible {
-  outline: 3px solid var(--color-focus-ring);
-  outline-offset: 3px;
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  margin-inline: auto;
+  border-radius: 24px;
+  background: var(--color-avatar-background);
+  color: var(--color-text-brand);
 }
 
 .chatList {
   list-style: none;
   padding: 0;
   display: grid;
-  gap: 8px;
-}
-
-.chatList button {
-  width: 100%;
-  text-align: left;
-  overflow-wrap: anywhere;
-}
-
-.chatList button[aria-pressed='true'] {
-  border-color: var(--color-action-primary);
+  gap: 4px;
 }
 
 .chatPane {
-  padding: 24px;
   background: var(--color-background);
   min-width: 0;
   min-height: 0;
@@ -114,16 +152,4 @@
 
 .chatPane > div:not([hidden]) {
   height: 100%;
-}
-
-@media (max-width: 700px) {
-  .page {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-  .sidebar {
-    max-height: 35dvh;
-    border-right: 0;
-    border-bottom: 1px solid var(--color-border);
-  }
 }

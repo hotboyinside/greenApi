@@ -1,15 +1,22 @@
-import { createApiTransport } from './createApiTransport'
-import type { ApiClientOptions } from './createApiTransport'
-import { parseStateInstance } from './stateInstance'
-import type { StateInstanceResponse } from './stateInstance'
-import { parseCheckAccount } from './checkAccount'
-import type { CheckAccountResponse } from './checkAccount'
-import { parseSendMessage } from './sendMessage'
-import type { SendMessageInput, SendMessageResponse } from './sendMessage'
-import { parseNotification, parseDeleteNotification } from './notifications'
-import type { Notification } from './notifications'
+import { createApiTransport } from '../transport'
+import { API_ENDPOINTS } from '../endpoints'
+import type { ApiClientOptions } from '../transport'
+import {
+  parseStateInstance,
+  parseCheckAccount,
+  parseSendMessage,
+  parseNotification,
+  parseDeleteNotification,
+} from '../contracts'
+import type {
+  StateInstanceResponse,
+  CheckAccountResponse,
+  SendMessageInput,
+  SendMessageResponse,
+  Notification,
+} from '../contracts'
 
-export type { ApiClientOptions } from './createApiTransport'
+export type { ApiClientOptions } from '../transport'
 
 export interface ApiCallOptions {
   signal?: AbortSignal
@@ -42,7 +49,7 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     receiveNotification: (callOptions = {}) =>
       transport.request({
         method: 'GET',
-        endpoint: 'receiveNotification',
+        endpoint: API_ENDPOINTS.receiveNotification,
         query: { receiveTimeout: 20 },
         timeoutMs: 30_000,
         allowEmptyResponse: true,
@@ -52,14 +59,14 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     deleteNotification: (receiptId, callOptions = {}) =>
       transport.request({
         method: 'DELETE',
-        endpoint: `deleteNotification/${receiptId}`,
+        endpoint: `${API_ENDPOINTS.deleteNotification}/${receiptId}`,
         parse: parseDeleteNotification,
         signal: callOptions.signal,
       }),
     sendMessage: (input, callOptions = {}) =>
       transport.request({
         method: 'POST',
-        endpoint: 'sendMessage',
+        endpoint: API_ENDPOINTS.sendMessage,
         body: input,
         parse: parseSendMessage,
         signal: callOptions.signal,
@@ -67,14 +74,14 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     getStateInstance: (callOptions = {}) =>
       transport.request({
         method: 'GET',
-        endpoint: 'getStateInstance',
+        endpoint: API_ENDPOINTS.getStateInstance,
         parse: parseStateInstance,
         signal: callOptions.signal,
       }),
     checkAccount: (phoneNumber, callOptions = {}) =>
       transport.request({
         method: 'POST',
-        endpoint: 'checkAccount',
+        endpoint: API_ENDPOINTS.checkAccount,
         body: { phoneNumber },
         parse: parseCheckAccount,
         signal: callOptions.signal,

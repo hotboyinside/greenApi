@@ -3,6 +3,12 @@
 :root {
   --color-background: var(--palette-slate-50);
   --color-surface: var(--palette-white);
+  --color-chat-hover: var(--palette-slate-50);
+  --color-chat-selected: var(--palette-green-50);
+  --color-avatar-background: var(--palette-green-100);
+  --color-avatar-text: var(--palette-green-700);
+  --color-message-incoming: var(--palette-white);
+  --color-message-outgoing: var(--palette-green-100);
 
   --color-text-primary: var(--palette-slate-900);
   --color-text-secondary: var(--palette-slate-600);

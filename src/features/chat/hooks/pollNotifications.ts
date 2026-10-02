@@ -5,8 +5,10 @@ function pause(ms: number, signal: AbortSignal): Promise<void> {
   return new Promise((resolve) => {
     if (signal.aborted) {
       resolve()
+
       return
     }
+
     const finish = () => {
       clearTimeout(timer)
       signal.removeEventListener('abort', finish)
@@ -24,6 +26,7 @@ export async function pollNotifications(
   onError: (error: string | null) => void,
 ): Promise<void> {
   let failures = 0
+
   while (!signal.aborted) {
     try {
       const notification = await client.receiveNotification({ signal })
@@ -37,6 +40,7 @@ export async function pollNotifications(
         await client.deleteNotification(notification.receiptId, { signal })
         // result:false также означает, что уведомление уже удалено другим потребителем.
       }
+
       if (signal.aborted) return
 
       failures = 0

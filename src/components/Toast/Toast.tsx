@@ -9,34 +9,38 @@ interface ToastProps {
 }
 
 export function Toast({ message, onClose, onExited }: ToastProps) {
+  const { id, text, closing } = message ?? {}
+
   return createPortal(
     <div
       className={styles.container}
-      role={message && !message.closing ? 'alert' : undefined}
+      role={message && !closing ? 'alert' : undefined}
       aria-live="assertive"
       aria-atomic="true"
     >
       {message && (
         <div
           className={styles.toast}
-          key={message.id}
-          data-state={message.closing ? 'closing' : 'open'}
-          aria-hidden={message.closing}
+          key={id}
+          data-state={closing ? 'closing' : 'open'}
+          aria-hidden={closing}
           onAnimationEnd={(event) => {
+            const { target, currentTarget, animationName } = event
             if (
-              event.target === event.currentTarget &&
-              message.closing &&
-              event.animationName === styles.exit
+              target === currentTarget &&
+              closing &&
+              animationName === styles.exit
             )
               onExited(message.id)
           }}
         >
-          <p>{message.text}</p>
+          <p>{text}</p>
+
           <button
             type="button"
             onClick={onClose}
             aria-label="Закрыть уведомление"
-            disabled={message.closing}
+            disabled={closing}
           >
             ×
           </button>

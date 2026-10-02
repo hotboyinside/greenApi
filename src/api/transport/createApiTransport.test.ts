@@ -16,6 +16,7 @@ function parseMessage(data: unknown): string {
   ) {
     throw new Error('Invalid message')
   }
+
   return data.idMessage
 }
 

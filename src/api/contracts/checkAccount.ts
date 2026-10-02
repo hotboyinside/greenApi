@@ -16,11 +16,15 @@ export function parseCheckAccount(data: unknown): CheckAccountResponse {
     throw new Error('Некорректный ответ проверки аккаунта')
   }
 
-  if (data.exist && data.chatId.trim()) {
-    return { exist: true, chatId: data.chatId, fromCache: data.fromCache }
+  const { exist, chatId, fromCache } = data
+
+  if (exist && chatId.trim()) {
+    return { exist: true, chatId, fromCache }
   }
-  if (!data.exist && data.chatId === '') {
-    return { exist: false, chatId: '', fromCache: data.fromCache }
+
+  if (!exist && chatId === '') {
+    return { exist: false, chatId: '', fromCache }
   }
+
   throw new Error('Ответ проверки аккаунта содержит противоречивые данные')
 }

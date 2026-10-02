@@ -28,6 +28,7 @@ async function fillCredentials() {
   const user = userEvent.setup()
   await user.type(screen.getByLabelText('idInstance'), '123')
   await user.type(screen.getByLabelText('apiTokenInstance'), 'test-token')
+
   return user
 }
 
@@ -227,6 +228,7 @@ describe('Подключение', () => {
     expect(screen.getByLabelText('idInstance')).toBeDisabled()
     const form = screen.getByLabelText('idInstance').closest('form')
     if (!form) throw new Error('Form not found')
+
     fireEvent.submit(form)
     expect(fetcher).toHaveBeenCalledTimes(1)
     view.unmount()

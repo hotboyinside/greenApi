@@ -1,12 +1,13 @@
-export { ApiError } from './ApiError'
-export type { ApiErrorCode } from './ApiError'
-export { createApiClient } from './createApiClient'
+export { ApiError } from './transport'
+export type { ApiErrorCode } from './transport'
+export { createApiClient } from './client'
+export type { ApiClient, ApiClientOptions, ApiCallOptions } from './client'
 export type {
-  ApiClient,
-  ApiClientOptions,
-  ApiCallOptions,
-} from './createApiClient'
-export type { StateInstance, StateInstanceResponse } from './stateInstance'
-export type { CheckAccountResponse } from './checkAccount'
-export type { SendMessageInput, SendMessageResponse } from './sendMessage'
-export type { Notification, IncomingTextMessage } from './notifications'
+  StateInstance,
+  StateInstanceResponse,
+  CheckAccountResponse,
+  SendMessageInput,
+  SendMessageResponse,
+  Notification,
+  IncomingTextMessage,
+} from './contracts'

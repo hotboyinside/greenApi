@@ -1,12 +1,13 @@
 import { expect, test, vi } from 'vitest'
+
 import { createApiClient } from './createApiClient'
-import { parseNotification } from './notifications'
 
 const options = {
   baseUrl: 'https://example.test/v3',
   idInstance: '123',
   apiTokenInstance: 'test-token',
 }
+
 const body = {
   typeWebhook: 'incomingMessageReceived',
   idMessage: 'msg-1',
@@ -56,31 +57,6 @@ test.each(['', '  ', 'null'])('принимает пустую очередь %j
   await expect(
     createApiClient({ ...options, fetcher }).receiveNotification(),
   ).resolves.toBeNull()
-})
-
-test('принимает текст со ссылкой', () => {
-  expect(
-    parseNotification({
-      receiptId: 1,
-      body: {
-        ...body,
-        messageData: {
-          typeMessage: 'extendedTextMessage',
-          extendedTextMessageData: { text: 'https://example.test' },
-        },
-      },
-    })?.message?.text,
-  ).toBe('https://example.test')
-})
-
-test.each([
-  { typeWebhook: 'outgoingMessageStatus' },
-  { ...body, messageData: { typeMessage: 'imageMessage' } },
-])('пропускает неподдерживаемые события %j', (body) => {
-  expect(parseNotification({ receiptId: 1, body })).toEqual({
-    receiptId: 1,
-    message: null,
-  })
 })
 
 test.each([

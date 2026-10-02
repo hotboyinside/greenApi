@@ -20,5 +20,6 @@ export function useNotifications(
       controller.abort()
     }
   }, [client, onMessage])
+
   return error
 }

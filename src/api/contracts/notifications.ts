@@ -40,22 +40,22 @@ export function parseNotification(data: unknown): Notification | null {
   if (!record(body.messageData) || !nonempty(body.messageData.typeMessage))
     throw new Error('Некорректные данные сообщения')
 
-  const messageData = body.messageData
-  if (
-    messageData.typeMessage !== 'textMessage' &&
-    messageData.typeMessage !== 'extendedTextMessage'
-  )
+  const { messageData } = body
+  const { typeMessage, textMessageData, extendedTextMessageData } = messageData
+  if (typeMessage !== 'textMessage' && typeMessage !== 'extendedTextMessage')
     return { receiptId, message: null }
 
   const textData =
-    messageData.typeMessage === 'textMessage'
-      ? messageData.textMessageData
-      : messageData.extendedTextMessageData
-  const text = record(textData)
-    ? textData[
-        messageData.typeMessage === 'textMessage' ? 'textMessage' : 'text'
-      ]
-    : undefined
+    typeMessage === 'textMessage' ? textMessageData : extendedTextMessageData
+  let text: unknown
+
+  if (record(textData)) {
+    if (typeMessage === 'textMessage') {
+      text = textData.textMessage
+    } else {
+      text = textData.text
+    }
+  }
 
   if (
     !record(body.senderData) ||
@@ -68,22 +68,21 @@ export function parseNotification(data: unknown): Notification | null {
   )
     throw new Error('Некорректный текст сообщения')
 
-  const chatId = body.senderData.chatId
-  const sender = body.senderData
+  const { idMessage, timestamp } = body
+  const { chatId, senderPhoneNumber, chatName } = body.senderData
 
   return {
     receiptId,
     message: {
       chatId,
-      idMessage: body.idMessage,
-      timestamp: body.timestamp,
+      idMessage,
+      timestamp,
       text,
       phoneNumber:
-        typeof sender.senderPhoneNumber === 'number' &&
-        sender.senderPhoneNumber > 0
-          ? String(sender.senderPhoneNumber)
+        typeof senderPhoneNumber === 'number' && senderPhoneNumber > 0
+          ? String(senderPhoneNumber)
           : chatId,
-      name: nonempty(sender.chatName) ? sender.chatName : undefined,
+      name: nonempty(chatName) ? chatName : undefined,
     },
   }
 }
@@ -91,5 +90,6 @@ export function parseNotification(data: unknown): Notification | null {
 export function parseDeleteNotification(data: unknown): { result: boolean } {
   if (!record(data) || typeof data.result !== 'boolean')
     throw new Error('Некорректный результат удаления')
+
   return { result: data.result }
 }

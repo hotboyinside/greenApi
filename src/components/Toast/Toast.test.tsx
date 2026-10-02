@@ -13,14 +13,17 @@ afterEach(() => {
 
 function Controls() {
   const { showError, closeToast } = useToast()
+
   return (
     <>
       <button onClick={() => showError('Первая ошибка')}>
         Показать первую
       </button>
+
       <button onClick={() => showError('Вторая ошибка')}>
         Показать вторую
       </button>
+
       <button onClick={closeToast}>Закрыть через контекст</button>
     </>
   )
@@ -36,6 +39,7 @@ function setup() {
     </StrictMode>,
   )
   fireEvent.click(screen.getByText('Показать первую'))
+
   return view
 }
 
@@ -61,6 +65,7 @@ test('показывает уведомление через портал вне
   const text = screen.getByText('Первая ошибка')
   const toast = text.parentElement
   if (!toast) throw new Error('Тоаст не найден')
+
   expect(view.container).not.toContainElement(text)
   expect(document.body).toContainElement(text)
   expect(screen.getByRole('alert')).toHaveTextContent('Первая ошибка')

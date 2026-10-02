@@ -17,5 +17,6 @@ export function parseSendMessage(data: unknown): SendMessageResponse {
   ) {
     throw new Error('Некорректный ответ отправки сообщения')
   }
+
   return { idMessage: data.idMessage }
 }

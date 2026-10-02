@@ -75,7 +75,7 @@ test('повторяет после ошибки удаления и подтв�
     s.onError,
   )
   await vi.advanceTimersByTimeAsync(0)
-  expect(s.onError).toHaveBeenLastCalledWith(expect.any(String))
+  expect(s.onError).toHaveBeenLastCalledWith(null)
   await vi.advanceTimersByTimeAsync(1999)
   expect(s.receive).toHaveBeenCalledTimes(1)
   await vi.advanceTimersByTimeAsync(1001)
@@ -125,29 +125,36 @@ test('игнорирует поздний ответ после отмены', a
   expect(s.remove).not.toHaveBeenCalled()
 })
 
-test('увеличивает паузу до 30 секунд и прекращает повторы при отмене', async () => {
-  const s = setup()
-  s.receive.mockRejectedValue(new ApiError('network', 'Ошибка'))
-  const loop = pollNotifications(
-    s.client,
-    s.controller.signal,
-    s.onMessage,
-    s.onError,
-  )
-  await vi.advanceTimersByTimeAsync(0)
-  let calls = 1
+test.each([
+  new ApiError('network', 'Ошибка'),
+  new ApiError('http', 'Ошибка', 408),
+])(
+  'повторяет временный сбой без ошибки в интерфейсе и останавливается при отмене %#',
+  async (error) => {
+    const s = setup()
+    s.receive.mockRejectedValue(error)
+    const loop = pollNotifications(
+      s.client,
+      s.controller.signal,
+      s.onMessage,
+      s.onError,
+    )
+    await vi.advanceTimersByTimeAsync(0)
+    let calls = 1
 
-  for (const delay of [2000, 4000, 8000, 16000, 30000, 30000]) {
-    await vi.advanceTimersByTimeAsync(delay - 1)
-    expect(s.receive).toHaveBeenCalledTimes(calls)
-    await vi.advanceTimersByTimeAsync(1)
-    expect(s.receive).toHaveBeenCalledTimes(++calls)
-  }
+    for (const delay of [2000, 4000, 8000, 16000, 30000, 30000]) {
+      await vi.advanceTimersByTimeAsync(delay - 1)
+      expect(s.receive).toHaveBeenCalledTimes(calls)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(s.receive).toHaveBeenCalledTimes(++calls)
+    }
 
-  s.controller.abort()
-  await loop
-  expect(vi.getTimerCount()).toBe(0)
-})
+    s.controller.abort()
+    await loop
+    expect(s.onError.mock.calls.every(([value]) => value === null)).toBe(true)
+    expect(vi.getTimerCount()).toBe(0)
+  },
+)
 
 test('не удаляет уведомление, если обработчик отменил сессию', async () => {
   const s = setup()

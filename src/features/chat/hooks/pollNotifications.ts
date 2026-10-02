@@ -67,7 +67,8 @@ export async function pollNotifications(
         return
       }
 
-      onError('Не удалось получить сообщения. Повторяем подключение…')
+      // TODO: после уточнения поведения HTTP 408 у GREEN-API пересмотреть показ временных ошибок polling.
+      onError(null)
       failures++
 
       await pause(Math.min(1000 * 2 ** Math.min(failures, 5), 30_000), signal)

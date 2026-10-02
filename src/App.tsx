@@ -1,11 +1,13 @@
+import { useState } from 'react'
+import { readEnv } from './config'
 import { ConnectionForm } from './features/connection'
 import { useConnection } from './features/connection/hooks'
 import { ChatScreen } from './features/chat/ChatScreen'
 
 function App() {
-  const { session, isConnecting, error, connect, disconnect } = useConnection(
-    import.meta.env.VITE_GREEN_API_URL,
-  )
+  const [env] = useState(readEnv)
+  const { session, isConnecting, error, connect, disconnect } =
+    useConnection(env)
 
   if (session) {
     return (

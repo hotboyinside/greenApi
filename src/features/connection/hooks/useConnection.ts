@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ApiClient, StateInstance } from '../../../api'
 import { ApiError, createApiClient } from '../../../api'
+import type { EnvResult } from '../../../config'
 
 export interface Session {
   idInstance: string
@@ -34,7 +35,7 @@ function connectionError(error: unknown): string {
   return 'Не удалось подключиться. Попробуйте снова.'
 }
 
-export function useConnection(baseUrl: string | undefined) {
+export function useConnection(env: EnvResult) {
   const [session, setSession] = useState<Session | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,16 +61,13 @@ export function useConnection(baseUrl: string | undefined) {
     setIsConnecting(true)
 
     try {
-      if (!baseUrl?.trim()) {
-        throw new ApiError(
-          'configuration',
-          'Не задан адрес API. Укажите VITE_GREEN_API_URL и перезапустите приложение.',
-        )
+      if (!env.success) {
+        throw new ApiError('configuration', env.error)
       }
 
       const normalizedId = idInstance.trim()
       client = createApiClient({
-        baseUrl: baseUrl.trim(),
+        baseUrl: env.data.greenApiUrl,
         idInstance: normalizedId,
         apiTokenInstance,
       })

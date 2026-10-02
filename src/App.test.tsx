@@ -212,6 +212,19 @@ describe('Подключение', () => {
     expect(fetcher).not.toHaveBeenCalled()
   })
 
+  test('показывает ошибку некорректного адреса без сетевого запроса', async () => {
+    vi.stubEnv('VITE_GREEN_API_URL', 'http://example.test?token=secret')
+    const fetcher = vi.fn<typeof fetch>()
+    vi.stubGlobal('fetch', fetcher)
+    render(<App />)
+    const user = await fillCredentials()
+    await user.click(screen.getByRole('button', { name: 'Подключиться' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('HTTPS-адрес')
+    expect(screen.getByRole('alert')).not.toHaveTextContent('secret')
+    expect(screen.getByRole('button', { name: 'Подключиться' })).toBeEnabled()
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+
   test('блокирует повторную отправку и отменяет запрос при размонтировании', async () => {
     let resolveResponse: ((response: Response) => void) | undefined
     const fetcher = vi.fn<typeof fetch>().mockImplementation(

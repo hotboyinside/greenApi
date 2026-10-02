@@ -36,7 +36,6 @@ export function Conversation({
     register,
     handleSubmit,
     reset,
-    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<MessageValues>({
     resolver: yupResolver(messageSchema),
@@ -101,7 +100,8 @@ export function Conversation({
         direction: 'outgoing',
       })
       reset()
-      if (activeRef.current) setFocus('message')
+      // reset сбрасывает ссылки React Hook Form, поэтому используем ссылку на DOM.
+      if (activeRef.current) textareaRef.current?.focus({ preventScroll: true })
     } catch (cause) {
       if (controller.signal.aborted) return
 

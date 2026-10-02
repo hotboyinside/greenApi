@@ -67,6 +67,7 @@ test('не отправляет пустое сообщение, затем до
   await user.click(screen.getByRole('button', { name: 'Отправить' }))
   expect(await screen.findByText('Привет MAX')).toBeInTheDocument()
   expect(screen.getByLabelText('Сообщение')).toHaveValue('')
+  expect(screen.getByLabelText('Сообщение')).toHaveFocus()
   expect(fetcher.mock.calls[0]?.[1]?.body).toBe(
     JSON.stringify({ chatId: 'canonical-id', message: 'Привет MAX' }),
   )

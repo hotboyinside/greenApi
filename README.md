@@ -15,6 +15,7 @@ React-приложение для отправки и получения тек�
 - Vitest и React Testing Library — тестирование логики и интерфейса;
   jsdom — окружение DOM для тестов.
 - ESLint и Prettier — проверка кода и форматирование.
+- Playwright — браузерные тесты; GitHub Actions — CI и публикация.
 
 ## Требования
 
@@ -90,9 +91,20 @@ pnpm format:check
 pnpm test:run
 ```
 
+Для браузерных тестов установить Chromium и запустить Playwright:
+
+```powershell
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
 ## Дополнительные команды
 
 - `pnpm format` — форматирование файлов.
 - `pnpm test` — тесты в режиме наблюдения.
 - `pnpm build` — проверка типов и сборка в `dist`.
+- `pnpm build:ci` — проверочная сборка с фиктивным API и путём `/greenApi/`.
+- `pnpm build:pages` — сборка для публикации; требует `VITE_GREEN_API_URL` в окружении.
+- `pnpm test:e2e:ui` — интерактивный запуск браузерных тестов.
+- `pnpm test:e2e:debug` — отладка браузерных тестов.
 - `pnpm preview` — локальный просмотр готовой сборки после `pnpm build`.

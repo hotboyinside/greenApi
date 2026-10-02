@@ -51,7 +51,3 @@ export function parseEnv(input: unknown): EnvResult {
     }
   }
 }
-
-export function readEnv(): EnvResult {
-  return parseEnv({ VITE_GREEN_API_URL: import.meta.env.VITE_GREEN_API_URL })
-}

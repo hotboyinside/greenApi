@@ -44,6 +44,7 @@ function setup() {
     .spyOn(client, 'deleteNotification')
     .mockResolvedValue({ result: true })
   const user = userEvent.setup()
+
   return { client, receive, remove, user }
 }
 

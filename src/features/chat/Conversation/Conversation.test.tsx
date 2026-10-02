@@ -20,6 +20,7 @@ function setup(fetcher = vi.fn<typeof fetch>()) {
   })
   function TestConversation() {
     const [messages, setMessages] = useState<ChatMessage[]>([])
+
     return (
       <Conversation
         client={client}
@@ -32,6 +33,7 @@ function setup(fetcher = vi.fn<typeof fetch>()) {
     )
   }
   const view = render(<TestConversation />)
+
   return { ...view, user: userEvent.setup(), fetcher }
 }
 
@@ -137,6 +139,7 @@ test('блокирует повторную отправку и отменяет
   expect(screen.getByRole('button', { name: 'Отправляем…' })).toBeDisabled()
   const form = screen.getByLabelText('Сообщение').closest('form')
   if (!form) throw new Error('Форма не найдена')
+
   fireEvent.submit(form)
   fireEvent.keyDown(screen.getByLabelText('Сообщение'), { key: 'Enter' })
   expect(fetcher).toHaveBeenCalledTimes(1)

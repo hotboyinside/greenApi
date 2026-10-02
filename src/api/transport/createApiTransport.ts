@@ -34,9 +34,16 @@ function isApiFailure(data: unknown): boolean {
 }
 
 export function createApiTransport(options: ApiClientOptions): ApiTransport {
+  const {
+    baseUrl: configuredUrl,
+    idInstance,
+    apiTokenInstance,
+    timeoutMs: configuredTimeout,
+    fetcher: configuredFetcher,
+  } = options
   let baseUrl: URL
   try {
-    baseUrl = new URL(options.baseUrl)
+    baseUrl = new URL(configuredUrl)
   } catch {
     throw new ApiError('configuration', 'Некорректный адрес GREEN-API')
   }
@@ -54,32 +61,43 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
     )
   }
 
-  if (!/^\d+$/.test(options.idInstance) || !options.apiTokenInstance.trim()) {
+  if (!/^\d+$/.test(idInstance) || !apiTokenInstance.trim()) {
     throw new ApiError('configuration', 'Укажите idInstance и apiTokenInstance')
   }
 
   const apiBase = baseUrl.toString().replace(/\/$/, '')
-  const idInstance = options.idInstance
-  const token = options.apiTokenInstance.trim()
-  const defaultTimeout = options.timeoutMs ?? 15_000
-  const fetcher = options.fetcher ?? fetch
+  const token = apiTokenInstance.trim()
+  const defaultTimeout = configuredTimeout ?? 15_000
+  const fetcher = configuredFetcher ?? fetch
   const sessionController = new AbortController()
 
   async function request<T>(input: ApiRequest<T>): Promise<T> {
-    const timeoutMs = input.timeoutMs ?? defaultTimeout
-    if (input.method === 'GET' && input.body !== undefined) {
+    const {
+      method,
+      endpoint,
+      body: requestBody,
+      query,
+      signal,
+      allowEmptyResponse,
+      parse,
+      timeoutMs: requestTimeout,
+    } = input
+    const timeoutMs = requestTimeout ?? defaultTimeout
+    if (method === 'GET' && requestBody !== undefined) {
       throw new ApiError('configuration', 'GET-запрос не должен содержать тело')
     }
-    if (sessionController.signal.aborted || input.signal?.aborted) {
+
+    if (sessionController.signal.aborted || signal?.aborted) {
       throw new ApiError('aborted', 'Запрос отменён')
     }
 
-    const [methodName, receiptId] = input.endpoint.split('/')
+    const [methodName, receiptId] = endpoint.split('/')
     const receiptPath = receiptId === undefined ? '' : `/${receiptId}`
     const url = new URL(
       `${apiBase}/waInstance${idInstance}/${methodName}/${encodeURIComponent(token)}${receiptPath}`,
     )
-    for (const [key, value] of Object.entries(input.query ?? {})) {
+
+    for (const [key, value] of Object.entries(query ?? {})) {
       url.searchParams.set(key, String(value))
     }
 
@@ -87,7 +105,7 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
     let timedOut = false
     const abort = () => controller.abort()
     sessionController.signal.addEventListener('abort', abort, { once: true })
-    input.signal?.addEventListener('abort', abort, { once: true })
+    signal?.addEventListener('abort', abort, { once: true })
     const timer = setTimeout(() => {
       timedOut = true
       controller.abort()
@@ -96,7 +114,8 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
     try {
       let body: string | undefined
       try {
-        body = input.body === undefined ? undefined : JSON.stringify(input.body)
+        body =
+          requestBody === undefined ? undefined : JSON.stringify(requestBody)
       } catch {
         throw new ApiError(
           'configuration',
@@ -104,7 +123,7 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
         )
       }
       const response = await fetcher(url.toString(), {
-        method: input.method,
+        method,
         signal: controller.signal,
         ...(body === undefined
           ? {}
@@ -118,9 +137,10 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
           response.status,
         )
       }
+
       let data: unknown
       try {
-        if (input.allowEmptyResponse) {
+        if (allowEmptyResponse) {
           const text = await response.text()
           data = text.trim() ? JSON.parse(text) : null
         } else {
@@ -136,8 +156,9 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
       if (isApiFailure(data)) {
         throw new ApiError('api', 'GREEN-API не смог выполнить операцию')
       }
+
       try {
-        return input.parse(data)
+        return parse(data)
       } catch {
         throw new ApiError(
           'invalid-response',
@@ -151,13 +172,15 @@ export function createApiTransport(options: ApiClientOptions): ApiTransport {
           timedOut ? 'Время ожидания ответа истекло' : 'Запрос отменён',
         )
       }
+
       if (error instanceof ApiError) throw error
+
       // Не передаём исходные ошибки транспорта: они могут содержать URL с токеном.
       throw new ApiError('network', 'Не удалось связаться с GREEN-API')
     } finally {
       clearTimeout(timer)
       sessionController.signal.removeEventListener('abort', abort)
-      input.signal?.removeEventListener('abort', abort)
+      signal?.removeEventListener('abort', abort)
     }
   }
 

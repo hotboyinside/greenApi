@@ -31,6 +31,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!message) return
+
     const { id, closing } = message
     const timer = setTimeout(
       () => {
@@ -42,6 +43,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       },
       closing ? 250 : 5000,
     )
+
     return () => {
       clearTimeout(timer)
     }

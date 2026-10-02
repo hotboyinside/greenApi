@@ -137,6 +137,7 @@ function setup(fetcher = vi.fn<typeof fetch>()) {
       onDisconnect={() => undefined}
     />,
   )
+
   return { ...view, fetcher, user: userEvent.setup() }
 }
 
@@ -168,9 +169,11 @@ test('открывает чат по идентификатору API и не с
   )
   const { user } = setup(fetcher)
   await user.click(screen.getByRole('button', { name: 'Новый чат' }))
+
   for (let attempt = 0; attempt < 2; attempt++) {
     if (attempt > 0)
       await user.click(screen.getByRole('button', { name: 'Новый чат' }))
+
     await user.type(screen.getByLabelText('Номер получателя'), ' 79991234567 ')
     await user.click(screen.getByRole('button', { name: 'Создать чат' }))
     expect(
@@ -178,6 +181,7 @@ test('открывает чат по идентификатору API и не с
     ).toBeInTheDocument()
     expect(screen.queryByLabelText('Номер получателя')).not.toBeInTheDocument()
   }
+
   expect(screen.getAllByRole('button', { name: '79991234567' })).toHaveLength(1)
   expect(fetcher).toHaveBeenCalledTimes(1)
   expect(screen.getByRole('alert')).toHaveTextContent(
@@ -234,6 +238,7 @@ test('блокирует повторный запрос и отменяет п�
   expect(screen.getByRole('button', { name: 'Проверяем…' })).toBeDisabled()
   const form = screen.getByLabelText('Номер получателя').closest('form')
   if (!form) throw new Error('Форма не найдена')
+
   fireEvent.submit(form)
   expect(fetcher).toHaveBeenCalledTimes(1)
   unmount()

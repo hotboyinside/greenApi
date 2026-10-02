@@ -24,6 +24,7 @@ export function Conversation({
   messages: ChatMessage[]
   onMessageSent: (message: ChatMessage) => void
 }) {
+  const { chatId, name, phoneNumber } = chat
   const [error, setError] = useState<string | null>(null)
   const requestRef = useRef<AbortController | null>(null)
   const endRef = useRef<HTMLDivElement | null>(null)
@@ -47,14 +48,16 @@ export function Conversation({
   useLayoutEffect(() => {
     const textarea = textareaRef.current
     if (!textarea || !isActive) return
+
     const resize = () => {
-      const computed = getComputedStyle(textarea)
+      const { borderTopWidth, borderBottomWidth } = getComputedStyle(textarea)
       textarea.style.height = '0px'
-      textarea.style.height = `${textarea.scrollHeight + parseFloat(computed.borderTopWidth) + parseFloat(computed.borderBottomWidth)}px`
+      textarea.style.height = `${textarea.scrollHeight + parseFloat(borderTopWidth) + parseFloat(borderBottomWidth)}px`
     }
     resize()
     // Пересчитываем переносы при изменении ширины, в том числе у сохранённого черновика.
     if (typeof ResizeObserver === 'undefined') return
+
     let previousWidth = textarea.clientWidth
     const observer = new ResizeObserver(() => {
       if (textarea.clientWidth !== previousWidth) {
@@ -63,6 +66,7 @@ export function Conversation({
       }
     })
     observer.observe(textarea)
+
     return () => observer.disconnect()
   }, [messageValue, isActive])
 
@@ -85,14 +89,14 @@ export function Conversation({
     setError(null)
 
     try {
-      const result = await client.sendMessage(
-        { chatId: chat.chatId, message },
+      const { idMessage } = await client.sendMessage(
+        { chatId, message },
         { signal: controller.signal },
       )
       if (controller.signal.aborted) return
 
       onMessageSent({
-        idMessage: result.idMessage,
+        idMessage,
         text: message,
         direction: 'outgoing',
       })
@@ -115,6 +119,7 @@ export function Conversation({
   function onSubmit(event: SubmitEvent<HTMLFormElement>) {
     if (isSubmitting) {
       event.preventDefault()
+
       return
     }
 
@@ -124,17 +129,19 @@ export function Conversation({
   return (
     <div className={styles.conversation}>
       <header className={styles.header}>
-        <ChatAvatar name={chat.name} />
+        <ChatAvatar name={name} />
+
         <div className={styles.recipient}>
-          <h2>{chat.name ?? chat.phoneNumber}</h2>
-          {chat.name && <p>{chat.phoneNumber}</p>}
+          <h2>{name ?? phoneNumber}</h2>
+
+          {name && <p>{phoneNumber}</p>}
         </div>
       </header>
 
       <div
         className={styles.messages}
         role="log"
-        aria-label={`Сообщения ${chat.phoneNumber}`}
+        aria-label={`Сообщения ${phoneNumber}`}
       >
         <div
           className={`${styles.messageList} ${messages.length === 0 ? styles.emptyMessageList : ''}`}
@@ -142,7 +149,9 @@ export function Conversation({
           {messages.length === 0 && (
             <div className={styles.emptyConversation}>
               <MessageCircle size={32} aria-hidden="true" />
+
               <p className={styles.emptyTitle}>Пока нет сообщений.</p>
+
               <p>Напишите первое сообщение в поле снизу.</p>
             </div>
           )}
@@ -159,6 +168,7 @@ export function Conversation({
           <div ref={endRef} />
         </div>
       </div>
+
       <form
         className={styles.messageForm}
         onSubmit={onSubmit}
@@ -167,7 +177,7 @@ export function Conversation({
       >
         <div className={styles.composer}>
           <textarea
-            id={`message-${chat.chatId}`}
+            id={`message-${chatId}`}
             {...messageField}
             ref={(element) => {
               messageField.ref(element)
@@ -192,15 +202,17 @@ export function Conversation({
                 event.keyCode === 229
               )
                 return
+
               event.preventDefault()
               if (!isSubmitting && !requestRef.current)
                 event.currentTarget.form?.requestSubmit()
             }}
             aria-invalid={Boolean(errors.message)}
             aria-describedby={
-              errors.message ? `message-error-${chat.chatId}` : undefined
+              errors.message ? `message-error-${chatId}` : undefined
             }
           />
+
           <button
             type="submit"
             disabled={isSubmitting}
@@ -217,7 +229,7 @@ export function Conversation({
 
         {errors.message && (
           <p
-            id={`message-error-${chat.chatId}`}
+            id={`message-error-${chatId}`}
             className={styles.error}
             role="alert"
           >

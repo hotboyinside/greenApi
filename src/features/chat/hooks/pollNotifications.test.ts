@@ -28,6 +28,7 @@ function setup() {
   const controller = new AbortController()
   const onMessage = vi.fn()
   const onError = vi.fn()
+
   return { client, receive, remove, controller, onMessage, onError }
 }
 
@@ -135,12 +136,14 @@ test('увеличивает паузу до 30 секунд и прекраща
   )
   await vi.advanceTimersByTimeAsync(0)
   let calls = 1
+
   for (const delay of [2000, 4000, 8000, 16000, 30000, 30000]) {
     await vi.advanceTimersByTimeAsync(delay - 1)
     expect(s.receive).toHaveBeenCalledTimes(calls)
     await vi.advanceTimersByTimeAsync(1)
     expect(s.receive).toHaveBeenCalledTimes(++calls)
   }
+
   s.controller.abort()
   await loop
   expect(vi.getTimerCount()).toBe(0)

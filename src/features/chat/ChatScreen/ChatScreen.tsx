@@ -39,6 +39,7 @@ export function ChatScreen({
       const previous = Object.hasOwn(current, chatId) ? current[chatId] : []
       if (previous.some((item) => item.idMessage === message.idMessage))
         return current
+
       return { ...current, [chatId]: [...previous, message] }
     })
   }, [])
@@ -70,15 +71,17 @@ export function ChatScreen({
   const activeChat = chats.find((chat) => chat.chatId === activeChatId)
 
   function openChat(chat: Chat) {
-    if (chats.some((item) => item.chatId === chat.chatId)) {
+    const { chatId } = chat
+    if (chats.some((item) => item.chatId === chatId)) {
       showError('Чат с этим получателем уже существует')
     }
+
     setChats((current) =>
-      current.some((item) => item.chatId === chat.chatId)
+      current.some((item) => item.chatId === chatId)
         ? current
         : [...current, chat],
     )
-    setActiveChatId(chat.chatId)
+    setActiveChatId(chatId)
     closeNewChat()
   }
 
@@ -88,11 +91,13 @@ export function ChatScreen({
         <div className={styles.sidebarTop}>
           <header className={styles.header}>
             <strong>GREEN API</strong>
+
             <button type="button" onClick={onDisconnect}>
               <LogOut size={18} aria-hidden="true" />
               Выйти
             </button>
           </header>
+
           <p className={styles.connection}>Подключено · инстанс {idInstance}</p>
 
           {pollingError && (
@@ -103,6 +108,7 @@ export function ChatScreen({
 
           <div className={styles.chatHeading}>
             <h1>Чаты</h1>
+
             <button
               ref={newChatButtonRef}
               className={styles.newChatButton}
@@ -122,6 +128,7 @@ export function ChatScreen({
               )}
             </button>
           </div>
+
           <div id="new-chat-panel" hidden={!isNewChatOpen}>
             {isNewChatOpen && (
               <NewChatForm
@@ -155,6 +162,7 @@ export function ChatScreen({
           </ul>
         </div>
       </aside>
+
       <section
         className={activeChat ? styles.chatPane : styles.empty}
         aria-label="Переписка"
@@ -164,7 +172,9 @@ export function ChatScreen({
             <div className={styles.emptyIcon} aria-hidden="true">
               <MessageCircle size={36} />
             </div>
+
             <h2>Вы подключены к MAX</h2>
+
             <p>Выберите чат слева или создайте новый через +</p>
           </div>
         )}

@@ -27,8 +27,10 @@ function connectionError(error: unknown): string {
     ) {
       return 'Не удалось подключиться. Проверьте idInstance и apiTokenInstance, а также доступ к инстансу.'
     }
+
     return error.message
   }
+
   return 'Не удалось подключиться. Попробуйте снова.'
 }
 
@@ -81,6 +83,7 @@ export function useConnection(baseUrl: string | undefined) {
         setError(stateMessages[stateInstance])
         client.dispose()
         clientRef.current = null
+
         return
       }
 

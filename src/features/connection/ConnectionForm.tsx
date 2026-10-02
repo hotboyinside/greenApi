@@ -29,16 +29,19 @@ export function ConnectionForm({
   })
   const isBusy = isConnecting || isSubmitting
 
-  async function submit(values: ConnectionValues) {
+  async function submit({ idInstance, apiTokenInstance }: ConnectionValues) {
     if (isConnecting) return
-    await onConnect(values.idInstance, values.apiTokenInstance)
+
+    await onConnect(idInstance, apiTokenInstance)
   }
 
   function onSubmit(event: SubmitEvent<HTMLFormElement>) {
     if (isBusy) {
       event.preventDefault()
+
       return
     }
+
     void handleSubmit(submit)(event)
   }
 
@@ -46,13 +49,17 @@ export function ConnectionForm({
     <main className={styles.page}>
       <section className={styles.card} aria-labelledby="connection-title">
         <span className={styles.brand}>GREEN API</span>
+
         <h1 id="connection-title">Подключение к MAX</h1>
+
         <p className={styles.description}>
           Введите данные инстанса из личного кабинета GREEN-API.
         </p>
+
         <form onSubmit={onSubmit} aria-busy={isBusy} noValidate>
           <fieldset className={styles.fields} disabled={isBusy}>
             <label htmlFor="instance-id">idInstance</label>
+
             <input
               id="instance-id"
               {...register('idInstance')}
@@ -65,12 +72,15 @@ export function ConnectionForm({
               }
               placeholder="Идентификатор инстанса"
             />
+
             {errors.idInstance && (
               <p id="instance-id-error" className={styles.error} role="alert">
                 {errors.idInstance.message}
               </p>
             )}
+
             <label htmlFor="instance-token">apiTokenInstance</label>
+
             <input
               id="instance-token"
               {...register('apiTokenInstance')}
@@ -83,6 +93,7 @@ export function ConnectionForm({
               }
               placeholder="Токен доступа"
             />
+
             {errors.apiTokenInstance && (
               <p
                 id="instance-token-error"
@@ -93,11 +104,13 @@ export function ConnectionForm({
               </p>
             )}
           </fieldset>
+
           {error && (
             <p className={styles.error} role="alert">
               {error}
             </p>
           )}
+
           <button
             className={styles.primaryButton}
             type="submit"
@@ -105,6 +118,7 @@ export function ConnectionForm({
           >
             {isBusy ? 'Подключаемся…' : 'Подключиться'}
           </button>
+
           <p className={styles.note} role="status">
             {isBusy
               ? 'Проверяем состояние инстанса…'

@@ -17,10 +17,18 @@ export function ChatListItem({
   onSelect,
 }: ChatListItemProps) {
   const previewId = useId()
-  const title = chat.name ?? chat.phoneNumber
-  const preview = lastMessage
-    ? `${lastMessage.direction === 'outgoing' ? 'Вы: ' : ''}${lastMessage.text.replace(/\s+/g, ' ').trim()}`
-    : 'Пока нет сообщений'
+  const { name, phoneNumber } = chat
+  const title = name ?? phoneNumber
+  let preview = 'Пока нет сообщений'
+
+  if (lastMessage) {
+    const { direction, text } = lastMessage
+    preview = text.replace(/\s+/g, ' ').trim()
+
+    if (direction === 'outgoing') {
+      preview = `Вы: ${preview}`
+    }
+  }
 
   return (
     <li>
@@ -32,11 +40,13 @@ export function ChatListItem({
         aria-pressed={isActive}
         onClick={onSelect}
       >
-        <ChatAvatar name={chat.name} />
+        <ChatAvatar name={name} />
+
         <span className={styles.content}>
           <span className={styles.title} title={title}>
             {title}
           </span>
+
           <span className={styles.preview} id={previewId} title={preview}>
             {preview}
           </span>

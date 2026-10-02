@@ -48,11 +48,13 @@ export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
 
   async function submit({ phoneNumber }: NewChatValues) {
     if (requestRef.current) return
+
     setError(null)
     const existingChat = chats.find((chat) => chat.phoneNumber === phoneNumber)
     if (existingChat) {
       reset()
       openChatRef.current(existingChat)
+
       return
     }
 
@@ -60,18 +62,19 @@ export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
     requestRef.current = controller
     setError(null)
     try {
-      const result = await client.checkAccount(Number(phoneNumber), {
+      const { exist, chatId } = await client.checkAccount(Number(phoneNumber), {
         signal: controller.signal,
       })
       if (controller.signal.aborted) return
 
-      if (!result.exist) {
+      if (!exist) {
         setError('У получателя нет аккаунта MAX')
+
         return
       }
 
       reset()
-      openChatRef.current({ chatId: result.chatId, phoneNumber })
+      openChatRef.current({ chatId, phoneNumber })
     } catch (cause) {
       if (controller.signal.aborted) return
 
@@ -88,8 +91,10 @@ export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
   function onSubmit(event: SubmitEvent<HTMLFormElement>) {
     if (isSubmitting) {
       event.preventDefault()
+
       return
     }
+
     void handleSubmit(submit)(event)
   }
 
@@ -101,6 +106,7 @@ export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
       aria-busy={isSubmitting}
     >
       <label htmlFor="recipient-phone">Номер получателя</label>
+
       <input
         id="recipient-phone"
         type="tel"
@@ -114,16 +120,19 @@ export function NewChatForm({ client, chats, onOpenChat }: NewChatFormProps) {
           errors.phoneNumber ? 'recipient-phone-error' : undefined
         }
       />
+
       {errors.phoneNumber && (
         <p id="recipient-phone-error" className={styles.error} role="alert">
           {errors.phoneNumber.message}
         </p>
       )}
+
       {error && (
         <p className={styles.error} role="alert">
           {error}
         </p>
       )}
+
       <button type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Проверяем…' : 'Создать чат'}
       </button>

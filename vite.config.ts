@@ -4,6 +4,7 @@ import { parseEnv } from './src/config/env.ts'
 
 export default defineConfig(({ mode }) => {
   const isE2E = mode === 'e2e'
+  const isMock = mode === 'mock'
   const isCI = mode === 'ci'
   const isPages = mode === 'pages'
   let greenApiUrl: string | undefined
@@ -22,7 +23,7 @@ export default defineConfig(({ mode }) => {
 
     base: isCI || isPages ? '/greenApi/' : '/',
 
-    envDir: isE2E || isCI || isPages ? false : undefined,
+    envDir: isE2E || isMock || isCI || isPages ? false : undefined,
 
     define: greenApiUrl
       ? {

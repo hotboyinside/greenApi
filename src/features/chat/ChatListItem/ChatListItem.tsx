@@ -8,12 +8,20 @@ interface ChatListItemProps {
   chat: Chat
   lastMessage?: ChatMessage
   isActive: boolean
+  unreadCount: number
   onSelect: () => void
 }
 
 export const ChatListItem = observer(
-  ({ chat, lastMessage, isActive, onSelect }: ChatListItemProps) => {
+  ({
+    chat,
+    lastMessage,
+    isActive,
+    unreadCount,
+    onSelect,
+  }: ChatListItemProps) => {
     const previewId = useId()
+    const unreadId = useId()
     const { name, phoneNumber } = chat
     const title = name ?? phoneNumber
     let preview = 'Пока нет сообщений'
@@ -33,7 +41,9 @@ export const ChatListItem = observer(
           type="button"
           className={styles.row}
           aria-label={title}
-          aria-describedby={previewId}
+          aria-describedby={
+            unreadCount > 0 ? `${previewId} ${unreadId}` : previewId
+          }
           aria-pressed={isActive}
           onClick={onSelect}
         >
@@ -48,6 +58,16 @@ export const ChatListItem = observer(
               {preview}
             </span>
           </span>
+          {unreadCount > 0 && (
+            <span
+              className={styles.unreadBadge}
+              id={unreadId}
+              aria-label={`Непрочитанных: ${unreadCount}`}
+            >
+              <span className={styles.srOnly}>Непрочитанных:</span>{' '}
+              {unreadCount}
+            </span>
+          )}
         </button>
       </li>
     )

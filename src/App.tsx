@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { readEnv } from './config'
+import { ChatScreen } from './features/chat/ChatScreen'
 import { ConnectionForm } from './features/connection'
 import { useConnection } from './features/connection/hooks'
-import { ChatScreen } from './features/chat/ChatScreen'
 
 function App() {
   const [env] = useState(readEnv)

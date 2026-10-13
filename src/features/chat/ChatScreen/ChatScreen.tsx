@@ -85,7 +85,18 @@ export const ChatScreen = observer(
             )}
 
             <div className={styles.chatHeading}>
-              <h1>Чаты</h1>
+              <div className={styles.chatTitle}>
+                <h1>Чаты</h1>
+
+                {chatStore.totalUnreadCount > 0 && (
+                  <span
+                    className={styles.unreadBadge}
+                    aria-label={`Всего непрочитанных: ${chatStore.totalUnreadCount}`}
+                  >
+                    {chatStore.totalUnreadCount}
+                  </span>
+                )}
+              </div>
 
               <button
                 ref={newChatButtonRef}
@@ -132,6 +143,7 @@ export const ChatScreen = observer(
                   chat={chat}
                   lastMessage={chatStore.messages.get(chat.chatId)?.at(-1)}
                   isActive={chat.chatId === activeChat?.chatId}
+                  unreadCount={chatStore.unreadCounts.get(chat.chatId) ?? 0}
                   onSelect={() => {
                     chatStore.selectChat(chat.chatId)
                   }}

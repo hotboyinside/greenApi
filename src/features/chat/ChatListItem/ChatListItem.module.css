@@ -27,9 +27,35 @@
 }
 
 .content {
+  flex: 1;
   display: grid;
   gap: 3px;
   min-width: 0;
+}
+
+.unreadBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-action-primary);
+  color: var(--color-text-on-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .title,

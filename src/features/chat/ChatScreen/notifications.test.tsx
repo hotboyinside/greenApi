@@ -68,8 +68,18 @@ test('начинает опрос без чатов в StrictMode, создаё�
   })
   expect(s.receive).toHaveBeenCalledTimes(1)
   const chatButton = screen.getByRole('button', { name: 'Павел' })
-  expect(chatButton).toHaveAccessibleDescription('Ответ MAX')
+  expect(screen.getByLabelText('Всего непрочитанных: 1')).toHaveTextContent('1')
+  expect(chatButton).toHaveAccessibleDescription('Ответ MAX Непрочитанных: 1')
+  expect(
+    within(chatButton).getByLabelText('Непрочитанных: 1'),
+  ).toHaveTextContent('1')
   await s.user.click(chatButton)
+  expect(
+    screen.queryByLabelText(/Всего непрочитанных:/),
+  ).not.toBeInTheDocument()
+  expect(
+    within(chatButton).queryByLabelText(/Непрочитанных:/),
+  ).not.toBeInTheDocument()
   expect(
     within(screen.getByRole('log')).getByText('Ответ MAX'),
   ).toBeInTheDocument()
@@ -82,6 +92,7 @@ test('начинает опрос без чатов в StrictMode, создаё�
   expect(screen.getAllByRole('button', { name: 'Павел' })).toHaveLength(1)
   expect(s.remove).toHaveBeenCalledTimes(2)
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Непрочитанных:/)).not.toBeInTheDocument()
   const signal = s.receive.mock.calls[0]?.[0]?.signal
   view.unmount()
   expect(signal?.aborted).toBe(true)
@@ -148,6 +159,7 @@ test('добавляет ответ в созданный по номеру ча
   )
   expect(screen.getAllByRole('button', { name: '79991234567' })).toHaveLength(1)
   expect(s.receive).toHaveBeenCalledTimes(1)
+  expect(screen.queryByLabelText(/Непрочитанных:/)).not.toBeInTheDocument()
 })
 
 function render(ui: ReactNode) {

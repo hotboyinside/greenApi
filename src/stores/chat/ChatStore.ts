@@ -16,12 +16,15 @@ export class ChatStore {
   activeChatId: string | null = null
 
   messages: ObservableMap<string, ChatMessage[]> = observable.map()
+  unreadCounts: ObservableMap<string, number> = observable.map()
 
   constructor() {
     makeObservable(this, {
       chats: observable,
       activeChatId: observable,
       messages: observable,
+      unreadCounts: observable,
+      totalUnreadCount: computed,
       activeChat: computed,
       addChat: action,
       addMessage: action,
@@ -31,6 +34,16 @@ export class ChatStore {
 
   get activeChat(): Chat | null {
     return this.chats.find((chat) => chat.chatId === this.activeChatId) ?? null
+  }
+
+  get totalUnreadCount(): number {
+    let total = 0
+
+    for (const count of this.unreadCounts.values()) {
+      total += count
+    }
+
+    return total
   }
 
   addChat(chat: Chat): AddChatResult {
@@ -47,6 +60,7 @@ export class ChatStore {
   selectChat(chatId: string) {
     if (this.chats.some((c) => c.chatId === chatId)) {
       this.activeChatId = chatId
+      this.unreadCounts.set(chatId, 0)
     }
   }
 
@@ -63,5 +77,10 @@ export class ChatStore {
     }
 
     messages.push(message)
+
+    if (message.direction === 'incoming' && chatId !== this.activeChatId) {
+      const currentUnreadCount = this.unreadCounts.get(chatId) ?? 0
+      this.unreadCounts.set(chatId, currentUnreadCount + 1)
+    }
   }
 }
